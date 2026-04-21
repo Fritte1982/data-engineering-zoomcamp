@@ -21,3 +21,4 @@ serving_dir
 *.docx
 *~$*
 docs/
+.venv/
