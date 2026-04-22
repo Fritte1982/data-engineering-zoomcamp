@@ -22,3 +22,4 @@ serving_dir
 *~$*
 docs/
 .venv/
+*raw_data/
