@@ -1,36 +1,32 @@
 #!/usr/bin/env python
 # coding: utf-8
+"""
+Insert Table n Data from rep-source:'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/'
+in to the pg-container :
+cli>:'docker run -it --rm -e POSTGRES_USER="root" -e POSTGRES_PASSWORD="root" -e POSTGRES_DB="ny_taxi"
+-v ny_taxi_postgres_data:/var/lib/postgresql -p 5432:5432 postgres:18'
+"""
 
-# In[1]:
 
-
+#region imports
 import pandas as pd
+from sqlalchemy import create_engine
+#endregion
 
-
-# In[2]:
-
-
-pd.__file__
-
-
-# In[ ]:
-
-
-
-
-
-# In[4]:
-
-
+#region repo-adress-variables
+year = 2021
+month = 1
 prefix = 'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/'
-df = pd.read_csv(prefix + 'yellow_tripdata_2021-01.csv.gz', nrows=100)
-df.head()
-df.dtypes
+url = prefix + f'yellow_tripdata_{year}-{month:02d}.csv.gz'
+#endregion
 
+#region sqlalchemy pg-engine-sting
+engine = create_engine('postgresql+psycopg://root:root@localhost:5432/ny_taxi')
+# endregion
 
-# In[5]:
+df = pd.read_csv(url, nrows=100)
 
-
+# region dtype parse
 dtype = {
     "VendorID": "Int64",
     "passenger_count": "Int64",
@@ -61,67 +57,19 @@ df = pd.read_csv(
     dtype=dtype,
     parse_dates=parse_dates
 )
-
-
-# In[10]:
-
-
-df.head()
-df.dtypes
-len(df)
-df.info()
-
-
-# In[7]:
-
-
-df.head()
-
-
-# In[11]:
-
-
-df.info()
-
-
-# In[11]:
-
-
-from sqlalchemy import create_engine
-engine = create_engine('postgresql+psycopg://root:root@localhost:5432/ny_taxi')
-
-
-# In[13]:
+#endregion
 
 
 print(pd.io.sql.get_schema(df, name='yellow_taxi_data', con=engine))
 
-
-# In[14]:
-
-
-df.head(n=0).to_sql(name='yellow_taxi_data', con=engine, if_exists='replace')
-
-
-# In[15]:
-
-
+# region iter chunks, create n insert the pg-db
 df_iter = pd.read_csv(
-    prefix + 'yellow_tripdata_2021-01.csv.gz',
+    url,
     dtype=dtype,
     parse_dates=parse_dates,
     iterator=True,
     chunksize=100000
 )
-
-
-# In[19]:
-
-
-df_iter
-
-
-# In[16]:
 
 
 first = True
@@ -146,10 +94,4 @@ for df_chunk in df_iter:
     )
 
     print("Inserted:", len(df_chunk))
-
-
-# In[ ]:
-
-
-
-
+#endregion
