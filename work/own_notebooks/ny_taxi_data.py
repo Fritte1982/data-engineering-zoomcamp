@@ -11,7 +11,11 @@ cli>:'docker run -it --rm -e POSTGRES_USER="root" -e POSTGRES_PASSWORD="root" -e
 #region imports
 import pandas as pd
 from sqlalchemy import create_engine
+from tqdm import tqdm
+import math
+
 #endregion
+total_chunks = math.ceil(1369765 / 100000)
 
 #region repo-adress-variables
 year = 2021
@@ -74,7 +78,7 @@ df_iter = pd.read_csv(
 
 first = True
 
-for df_chunk in df_iter:
+for df_chunk in tqdm( df_iter,  desc="NY Taxi ETL", unit="chunk", dynamic_ncols=True, disable=False, total=total_chunks ):
 
     if first:
         # Create table schema (no data)
@@ -84,7 +88,7 @@ for df_chunk in df_iter:
             if_exists="replace"
         )
         first = False
-        print("Table created")
+        # print("Table created")
 
     # Insert chunk
     df_chunk.to_sql(
@@ -93,5 +97,5 @@ for df_chunk in df_iter:
         if_exists="append"
     )
 
-    print("Inserted:", len(df_chunk))
+    #print("Inserted:", len(df_chunk))
 #endregion
