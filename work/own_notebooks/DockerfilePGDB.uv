@@ -16,7 +16,7 @@ COPY "pyproject.toml" "uv.lock" "README.md" ./
 RUN uv sync --locked
 
 # Copy application code
-COPY /work/docker_learn/own_notebooks/ny_taxi_data.py ny_taxi_data.py
+COPY /work/own_notebooks/ny_taxi_data.py ny_taxi_data.py
 
 # Set entry point
 ENTRYPOINT ["uv", "run", "python", "ny_taxi_data.py"]
